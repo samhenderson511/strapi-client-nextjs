@@ -2,7 +2,7 @@
   "name": "strapi-client-nextjs",
   "author": "Sam Henderson",
   "description": "Next.js 14 client for Strapi Rest API using next/cache",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist/strapi-client.js",
   "module": "dist/strapi-client.mjs",
