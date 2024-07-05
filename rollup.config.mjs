@@ -2,8 +2,9 @@
 /* eslint-disable no-undef */
 import dts from 'rollup-plugin-dts';
 import esbuild from 'rollup-plugin-esbuild';
+import packageJson from './package.json' assert { type: "json" };
 
-const name = require('./package.json').main.replace(/\.js$/, '');
+const name = packageJson.main.replace(/\.js$/, '');
 
 const bundle = config => ({
   ...config,

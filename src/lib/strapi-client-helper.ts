@@ -1,4 +1,4 @@
-import { InferedTypeFromArray, StrapiApiError, StrapiApiResponse } from './types/base';
+import { InferredTypeFromArray, StrapiApiError, StrapiApiResponse } from './types/base';
 import { CrudFilter, CrudSorting, DeepFilterType, PopulateDeepOptions } from './types/crud';
 import { parse, stringify } from 'qs';
 import { generateQueryString, stringToArray } from './helpers';
@@ -85,20 +85,20 @@ export abstract class StrapiClientHelper<T> {
     return response;
   }
 
-  protected _generateFilter({ field, operator, value }: CrudFilter<InferedTypeFromArray<T>>): string {
+  protected _generateFilter({ field, operator, value }: CrudFilter<InferredTypeFromArray<T>>): string {
     let rawQuery = '';
     if (Array.isArray(value)) {
       value.map((val) => {
-        rawQuery += `&filters[${field}][$${operator}]=${val}`;
+        rawQuery += `&filters[${String(field)}][$${operator}]=${val}`;
       });
     } else {
-      rawQuery += `&filters[${field}][$${operator}]=${value}`;
+      rawQuery += `&filters[${String(field)}][$${operator}]=${value}`;
     }
     const parsedQuery = parse(rawQuery);
     return this._handleUrl(generateQueryString(parsedQuery));
   }
 
-  protected _genrateRelationsFilter(deepFilter: DeepFilterType) {
+  protected _generateRelationsFilter(deepFilter: DeepFilterType) {
     let rawQuery = `filters`;
     const { path: fields, operator, value } = deepFilter;
     if (Array.isArray(fields)) {
@@ -129,9 +129,9 @@ export abstract class StrapiClientHelper<T> {
     const sort: string[] = [];
     _sort.map((item) => {
       if (item.order) {
-        sort.push(`${item.field}:${item.order}`);
+        sort.push(`${String(item.field)}:${item.order}`);
       } else {
-        sort.push(`${item.field}`);
+        sort.push(`${String(item.field)}`);
       }
     });
     return this._handleUrl(generateQueryString({ sort }));

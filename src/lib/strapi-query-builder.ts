@@ -1,8 +1,8 @@
-import { AxiosInstance } from 'axios';
-import { generateQueryString } from './helpers';
-import { StrapiClientHelper } from './strapi-client-helper';
-import { StrapiFilterBuilder } from './strapi-filter-builder';
-import { StrapiApiResponse } from './types/base';
+import { AxiosInstance } from "axios";
+import { generateQueryString } from "./helpers";
+import { StrapiClientHelper } from "./strapi-client-helper";
+import { StrapiFilterBuilder } from "./strapi-filter-builder";
+import { StrapiApiResponse } from "./types/base";
 
 type PostValuesType<T> = {
   data: T;
@@ -10,21 +10,28 @@ type PostValuesType<T> = {
 export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
   private httpClient: AxiosInstance;
   private isNotUserContent: boolean;
-  protected normalizData: boolean;
+  protected normalizeData: boolean;
   private debug: boolean;
+  tags: string[];
+  revalidate: number;
+
   constructor(
     url: string,
     axiosInstance: AxiosInstance,
-    isNotUserContent: boolean,
     normalizeData: boolean,
-    debug: boolean
+    debug: boolean,
+    tags: string[],
+    revalidate: number,
+    isNotUserContent: boolean
   ) {
     super(url);
     this.debug = debug;
-    this.normalizData = normalizeData;
-    this.url = `${url}`;
-    this.isNotUserContent = isNotUserContent;
+    this.url = url;
+    this.tags = tags;
+    this.revalidate = revalidate;
     this.httpClient = axiosInstance;
+    this.normalizeData = normalizeData;
+    this.isNotUserContent = isNotUserContent;
   }
 
   /**
@@ -45,8 +52,10 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
     return new StrapiFilterBuilder<T[]>(
       this.url,
       this.httpClient,
-      this.normalizData,
+      this.normalizeData,
       this.debug,
+      this.tags,
+      this.revalidate,
       this.isNotUserContent
     );
   }
@@ -58,7 +67,7 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
    */
   selectManyByID(ids: string[] | number[]): StrapiFilterBuilder<T[]> {
     if (ids) {
-      const query = ids?.map((item: string | number) => `filters[id][$in]=${item}`).join('&');
+      const query = ids?.map((item: string | number) => `filters[id][$in]=${item}`).join("&");
 
       this.url = `${this.url}?${query}`;
     }
@@ -66,8 +75,10 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
     return new StrapiFilterBuilder<T[]>(
       this.url,
       this.httpClient,
-      this.normalizData,
+      this.normalizeData,
       this.debug,
+      this.tags,
+      this.revalidate,
       this.isNotUserContent
     );
   }
@@ -82,7 +93,7 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
       this.httpClient
         .post<StrapiApiResponse<T>>(this.url, this._handleValues(values))
         .then((res) => {
-          resolve(this.normalizData ? this._returnDataHandler(res.data) : res.data);
+          resolve(this.normalizeData ? this._returnDataHandler(res.data) : res.data);
         })
         .catch((err) => {
           if (err) {
@@ -100,7 +111,10 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
   async createMany(values: T[]): Promise<{ success: true }> {
     await Promise.all(
       values.map(async (value): Promise<StrapiApiResponse<T>> => {
-        const { data } = await this.httpClient.post<StrapiApiResponse<T>>(this.url, this._handleValues(value));
+        const { data } = await this.httpClient.post<StrapiApiResponse<T>>(
+          this.url,
+          this._handleValues(value)
+        );
         return Promise.resolve(data);
       })
     ).catch((error) => {
@@ -124,7 +138,7 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
       this.httpClient
         .put<StrapiApiResponse<T>>(url, this._handleValues(values))
         .then((res) => {
-          resolve(this.normalizData ? this._returnDataHandler(res.data) : res.data);
+          resolve(this.normalizeData ? this._returnDataHandler(res.data) : res.data);
         })
         .catch((err) => {
           if (err) {
@@ -139,12 +153,17 @@ export class StrapiQueryBuilder<T> extends StrapiClientHelper<T> {
    * @param values objects of values to update many records.
    * @returns return boolean value if the process on success
    */
-  async updateMany(values: { id: string | number; variables: Partial<T> }[]): Promise<{ success: true }> {
+  async updateMany(
+    values: { id: string | number; variables: Partial<T> }[]
+  ): Promise<{ success: true }> {
     await Promise.all(
       values.map(async (value): Promise<StrapiApiResponse<T>> => {
         const url = `${this.url}/${value.id}`;
 
-        const { data } = await this.httpClient.put<StrapiApiResponse<T>>(url, this._handleValues(value.variables));
+        const { data } = await this.httpClient.put<StrapiApiResponse<T>>(
+          url,
+          this._handleValues(value.variables)
+        );
         return Promise.resolve(data);
       })
     ).catch((error) => {

@@ -5,12 +5,6 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
-  ],
-  "rules": {
-    "no-console": "warn",
-    "prettier/prettier": 2,
-    "@typescript-eslint/no-explicit-any": ["off"]
-  }
+    "plugin:@typescript-eslint/recommended"
+  ]
 }

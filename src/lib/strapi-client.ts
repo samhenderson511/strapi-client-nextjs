@@ -1,8 +1,8 @@
-import { AxiosInstance } from 'axios';
-import { StrapiAuthClient } from './strapi-auth-client';
-import { getAxiosInstance } from './service/http';
-import { StrapiClientOptions } from './types/base';
-import { StrapiQueryBuilder } from './strapi-query-builder';
+import { AxiosInstance } from "axios";
+import { StrapiAuthClient } from "./strapi-auth-client";
+import { getAxiosInstance } from "./service/http";
+import { StrapiClientOptions } from "./types/base";
+import { StrapiQueryBuilder } from "./strapi-query-builder";
 
 export class StrapiClient {
   private httpClient: AxiosInstance;
@@ -28,9 +28,17 @@ export class StrapiClient {
    * @param name The model name to operate on.
    */
   from<T = any>(contentName: string): StrapiQueryBuilder<T> {
-    contentName === 'users' ? (this.isNotUserContent = false) : (this.isNotUserContent = true);
+    contentName === "users" ? (this.isNotUserContent = false) : (this.isNotUserContent = true);
     const url = `${this.options.url}/${contentName}`;
-    return new StrapiQueryBuilder<T>(url, this.httpClient, this.isNotUserContent, this.normalizeData, this.debug);
+    return new StrapiQueryBuilder<T>(
+      url,
+      this.httpClient,
+      this.normalizeData,
+      this.debug,
+      this.options.tags || [],
+      this.options.revalidate || 60,
+      this.isNotUserContent
+    );
   }
 
   /**
@@ -42,11 +50,11 @@ export class StrapiClient {
   }
 
   setToken(token: string): void {
-    this.httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    this.httpClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
 
   removeToken(): void {
-    delete this.httpClient.defaults.headers.common['Authorization'];
+    delete this.httpClient.defaults.headers.common["Authorization"];
   }
 
   private _initStrapiAuthClient(axiosInstance: AxiosInstance) {

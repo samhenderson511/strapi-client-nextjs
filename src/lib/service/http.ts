@@ -1,15 +1,13 @@
-import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 export const getAxiosInstance = (url: string, apiToken?: string): AxiosInstance => {
   const API = axios.create();
 
   API.defaults.baseURL = url;
 
-  const axiosConfig = (config: AxiosRequestConfig): AxiosRequestConfig => {
+  const axiosConfig = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     if (apiToken) {
-      config.headers = {
-        Authorization: `Bearer ${apiToken}`,
-      };
+      config.headers.Authorization = `Bearer ${apiToken}`;
     }
     return config;
   };

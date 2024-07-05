@@ -13,6 +13,8 @@ export type StrapiClientOptions = {
   headers?: { [key: string]: string };
   persistSession?: boolean;
   localStorage?: SupportedStorage;
+  tags?: string[];
+  revalidate?: number;
 };
 
 type StrapiPagination = {
@@ -33,8 +35,8 @@ export type StrapiApiResponse<T> = {
 };
 
 export enum PublicationState {
-  LIVE = 'live',
-  PREVIEW = 'preview',
+  LIVE = "live",
+  PREVIEW = "preview",
 }
 
 export type StrapiUnifiedResponse<T> = {
@@ -42,7 +44,7 @@ export type StrapiUnifiedResponse<T> = {
   attributes: T;
 };
 
-export type InferedTypeFromArray<T> = T extends Array<infer U> ? U : T;
+export type InferredTypeFromArray<T> = T extends Array<infer U> ? U : T;
 
 export type StrapiPopulatedResponse<T> = {
   data: T extends Array<infer U> ? Array<StrapiUnifiedResponse<U>> : StrapiUnifiedResponse<T>;
@@ -64,7 +66,11 @@ type AnyFunction = (...args: any[]) => any;
 type MaybePromisify<T> = T | Promise<T>;
 
 type PromisifyMethods<T> = {
-  [K in keyof T]: T[K] extends AnyFunction ? (...args: Parameters<T[K]>) => MaybePromisify<ReturnType<T[K]>> : T[K];
+  [K in keyof T]: T[K] extends AnyFunction
+    ? (...args: Parameters<T[K]>) => MaybePromisify<ReturnType<T[K]>>
+    : T[K];
 };
 
-export type SupportedStorage = PromisifyMethods<Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>>;
+export type SupportedStorage = PromisifyMethods<
+  Pick<Storage, "getItem" | "setItem" | "removeItem">
+>;
