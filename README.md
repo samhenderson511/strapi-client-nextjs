@@ -1,32 +1,28 @@
-# strapi-client-js
+# strapi-client-nextjs
 
-Javascript client for Strapi Rest API.
+This is a fork of strapi-client-nextjs, with caching for nextjs using next/cache.
 
 ## Installation
 
 ```bash
-npm i @kmariappan/strapi-client-js
-
-npm i axios qs
+npm i strapi-client-nextjs axios qs
 
  or
 
-yarn add @kmariappan/strapi-client-js
-
-yarn add axios qs
+yarn add strapi-client-nextjs axios qs
 
 ```
 
 ## Peer Dependencies
 
-This package uses [axios](https://axios-http.com/) as a http client and [qs](https://github.com/ljharb/qs) for parsing and stringifying the Query.
+This package uses [axios](https://axios-http.com/) as a http client and [qs](https://github.com/ljharb/qs) for parsing and stringifying the query.
 
 ### Create Client Options
 
 ```ts
 // Typescript
 
-import { createClient, StrapiClientOptions } from '@kmariappan/strapi-client-js';
+import { createClient, StrapiClientOptions } from 'strapi-client-nextjs';
 
 const options: StrapiClientOptions = {
   url: 'http://localhost:1337/api',
@@ -34,6 +30,8 @@ const options: StrapiClientOptions = {
   normalizeData: true, // Normalize Unified response Format. default - true
   headers: {}, // Custom Headers
   persistSession: false, // Persist authenticated token in browser local storage. default -false
+  tags: [] // revalidation tags for nextjs
+  revalidate: 0 // revalidation timeout for nextjs
 };
 
 const strapiClient = createClient(options);
@@ -44,7 +42,7 @@ const strapiClient = createClient(options);
 ## Get
 
 ```js
-import { createClient } from '@kmariappan/strapi-client-js';
+import { createClient } from 'strapi-client-nextjs';
 
 const strapiClient = createClient({ url: 'http://localhost:1337/api' });
 
@@ -71,6 +69,16 @@ Retrieve many entries by ids
 
 ```ts
 const { data, error, meta } = await strapiClient.from('students').selectManyByID([200, 240]).get();
+```
+
+### Adding next/cache tags
+
+```ts
+const { data, error, meta } = await strapiClient
+  .from<Student>('students')
+  .select()
+  .setTags(['refresh'])
+  .get();
 ```
 
 ### Filter Methods
@@ -275,7 +283,7 @@ signup new user
 signin user
 
 ```ts
-  const { data, error } = await strapiClient.auth.signIn({    
+  const { data, error } = await strapiClient.auth.signIn({
     email: 'name@gmail.com',
     password: '12345678',
   });
@@ -283,7 +291,7 @@ signin user
 signout user - removes the authentication token if saved in localstorage
 
 ```ts
-  const { error } = await strapiClient.auth.signOut();  
+  const { error } = await strapiClient.auth.signOut();
 ```
 
 # Misc
@@ -297,4 +305,24 @@ Get url from the client Object
 
 ```
 
+Set up revalidation on Strapi
 
+1. Create an API route in your frontend with the following code:
+
+```ts
+import { revalidateTag } from "next/cache";
+import { NextRequest } from "next/server";
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const strapiTag = body.model;
+
+  revalidateTag(strapiTag);
+
+  console.log(`Revalidated ${strapiTag}`);
+  return Response.json({ revalidated: strapiTag, now: Date.now() });
+}
+```
+
+2. Set up a webhook in Strapi settings with the API endpoint on the frontend and enable the relevant events.
+3. Add plural and singular endpoints as tags in the strapi client requests using the .setTags() method.
