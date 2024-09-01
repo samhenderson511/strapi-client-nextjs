@@ -61,7 +61,7 @@ export class StrapiFilterBuilder<T> extends StrapiClientHelper<T> {
           }
         }),
       [this.url],
-      { revalidate: this.revalidate, tags: this.tags }
+      { revalidate: Boolean(this.tags?.length) ? false : this.revalidate, tags: this.tags }
     );
 
     const data = await cache();
